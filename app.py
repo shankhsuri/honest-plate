@@ -210,16 +210,52 @@ with tab_log:
             else:
                 with st.spinner("AI Analyzing..."):
                     try:
+                        # Initialize Model
                         model = genai.GenerativeModel("gemini-2.5-flash")
-                        prompt = """
-                        Analyze this meal. If there are multiple items, SUM the calories and combine the names.
-                        Return ONLY this format: 'Combined Food Names | Total Calories (int) | Flag'
-                        Example: 'Banana & Coffee | 160 | High Sugar'
-                        """
                         
-                        # Gemini Call
-                        resp = model.generate_content([prompt, content])
-                        
+                        # LOGIC: Switch Prompt based on Input Type
+                        if mode == "Text":
+
+                            prompt = """
+                            You are an expert Nutritionist and Calorie Auditor. Analyze this food description text.
+                            1. Identify every food item and specific quantity mentioned (e.g., "2 slices", "1 cup").
+                            2. If quantity is vague (e.g., "a bowl"), assume a standard medium serving.
+                            3. Estimate calories based on standard database values.
+                            4. SUM the total calories.
+                            
+                            Return ONLY this format: 'Food Name | Total Calories (int) | Flag'
+                            Example: 'Banana & Coffee | 165 | High Sugar'
+                            """
+                            # Call Gemini with Text only
+                            resp = model.generate_content([prompt, content])
+
+                        else:
+                            
+                            prompt = """
+                            You are an expert Nutritionist and Calorie Auditor. Analyze this food image with high precision.
+                            
+                            Perform this internal "Chain of Thought" analysis before answering:
+                            1. **Identify Components:** List every visible ingredient (e.g., "Kidney beans, spinach, thick gravy, white dollop").
+                            2. **Volume Analysis:** Estimate portion size relative to the container (e.g., "This looks like a 1.5 cup serving in a standard glass bowl").
+                            3. **The "Sheen" Test (CRITICAL):** Look at the surface texture.
+                            - Does it look oily/glistening? -> If YES, add 100-150 kcal for hidden fats/ghee.
+                            - Does it look matte/watery? -> If YES, assume boiled/steamed standard calories.
+                            - **Do NOT assume 'generous oil' by default. Judge based on visuals.**
+                            4. **Topping Audit:** Identify toppings (e.g., "Is that Greek Yogurt (low cal) or Sour Cream (high cal)?"). If ambiguous, choose the standard option (Yogurt for Indian food).
+                            5. **Summation:** Add up the base + sauce + toppings.
+                            
+                            **Strict Output Format:**
+                            Return ONLY a single string in this format (no bolding, no extra text):
+                            Food Name | Total Calories (Integer) | Macronutrient Flag
+                            
+                            Examples:
+                            'Rajma Masala & Yogurt | 340 | High Protein'
+                            'Butter Chicken & Naan | 850 | High Fat'
+                            """
+                            # Call Gemini with Prompt + Image
+                            resp = model.generate_content([prompt, content])
+
+                        # --- PARSING THE RESPONSE (Same for both) ---
                         parts = resp.text.split("|")
                         st.session_state.temp_log = {
                             "food": parts[0].strip(),
