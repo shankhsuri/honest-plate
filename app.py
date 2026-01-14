@@ -155,7 +155,7 @@ PROFILE = get_or_create_profile(USER)
 if not PROFILE:
     st.warning(f"Welcome {USER}! One-time setup:")
     with st.form("setup"):
-        age = st.number_input("Age", 30, 90, 50)
+        age = st.number_input("Age", 10, 90, 50)
         gender = st.selectbox("Gender", ["Male", "Female"])
         height = st.number_input("Height (cm)", 100, 220, 160)
         weight = st.number_input("Weight (kg)", 40, 150, 70)
