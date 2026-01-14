@@ -210,7 +210,7 @@ with tab_log:
             else:
                 with st.spinner("AI Analyzing..."):
                     try:
-                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        model = genai.GenerativeModel("gemini-2.5-flash")
                         prompt = "Analyze meal. Assume Indian Home Cooking. Return: 'Food Name | Calories (int) | Flag'"
                         
                         # Gemini Call
