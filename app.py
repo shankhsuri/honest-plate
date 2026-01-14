@@ -211,7 +211,11 @@ with tab_log:
                 with st.spinner("AI Analyzing..."):
                     try:
                         model = genai.GenerativeModel("gemini-2.5-flash")
-                        prompt = "Analyze meal. Assume Indian Home Cooking. Return: 'Food Name | Calories (int) | Flag'"
+                        prompt = """
+                        Analyze this meal. If there are multiple items, SUM the calories and combine the names.
+                        Return ONLY this format: 'Combined Food Names | Total Calories (int) | Flag'
+                        Example: 'Banana & Coffee | 160 | High Sugar'
+                        """
                         
                         # Gemini Call
                         resp = model.generate_content([prompt, content])
